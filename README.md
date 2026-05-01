@@ -1,6 +1,8 @@
 # Simple OpenRouter Agent
 
-This is a minimal Python coding-agent harness for experimenting with the ideas we discussed:
+Simple agent based on Pi, but implemented as a minimal Python/OpenRouter harness.
+
+This project is for experimenting with:
 
 - OpenRouter chat completions
 - a basic model/tool loop
@@ -95,12 +97,12 @@ That means commands can modify mounted workspace files, but not your whole Windo
 ## Files
 
 ```text
-agent.py                  launcher
-simple_agent/config.py    CLI and environment config
-simple_agent/loop.py      agent/control loop
+agent.py                   launcher
+simple_agent/config.py     CLI and environment config
+simple_agent/loop.py       agent/control loop
 simple_agent/openrouter.py OpenRouter HTTP client
-simple_agent/tools.py     file tools and tool dispatch
+simple_agent/tools.py      file tools and tool dispatch
 simple_agent/docker_bash.py Docker-backed bash runner
-simple_agent/safety.py    path checks, confirmations, truncation
-simple_agent/sessions.py  JSONL session append helper
+simple_agent/safety.py     path checks, confirmations, truncation
+simple_agent/sessions.py   JSONL session append helper
 ```
