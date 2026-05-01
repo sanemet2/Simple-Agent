@@ -1,0 +1,71 @@
+Simple Agent Architecture
+=========================
+
+Startup chain:
+
+agent.py
+  -> simple_agent/main.py
+    -> simple_agent/config.py
+    -> simple_agent/docker_bash.py
+    -> simple_agent/loop.py
+    -> simple_agent/openrouter.py
+    -> simple_agent/tools.py
+
+Runtime dependency map:
+
+simple_agent/main.py
+  - Parses config with config.py
+  - Creates OpenRouterClient from openrouter.py
+  - Creates ToolRegistry through tools.py
+  - Creates AgentLoop from loop.py
+  - Runs one prompt or starts the interactive REPL
+
+simple_agent/loop.py
+  - Builds the base system message
+  - Loads AGENTS.md and CLAUDE.md from the workspace if present
+  - Loads prior session messages with sessions.py
+  - Gets tool schemas from tools.py
+  - Calls the model through a generic ChatClient protocol
+  - Executes requested tools through ToolRegistry
+  - Appends tool results back into message history
+  - Repeats until the model returns a final answer
+
+simple_agent/tools.py
+  - Creates ToolRegistry through create_tool_registry(...)
+  - Creates DockerBash from docker_bash.py when bash is enabled
+  - Defines the tool schemas sent to the model
+  - Dispatches tool calls by name
+  - Implements list_files, read_file, search_files, write_file, and edit_file
+  - Calls DockerBash for the bash tool
+  - Uses safety.py to restrict paths and confirm risky actions
+
+simple_agent/docker_bash.py
+  - Runs bash commands inside Docker
+  - Mounts the configured workspace as /workspace
+  - Uses --network none unless the agent was started with --network
+  - Uses --pull never so Docker does not silently download images
+  - Uses safety.py for confirmation and output truncation
+
+simple_agent/safety.py
+  - Resolves requested paths inside the workspace
+  - Blocks access to sensitive files like .env, keys, and SSH config
+  - Prompts before writes, edits, and bash unless --yes is used
+  - Truncates oversized tool output
+
+simple_agent/openrouter.py
+  - Sends messages and tool schemas to OpenRouter
+  - Receives the assistant response or tool-call request
+  - Does not execute tools itself
+  - Is created by main.py and passed into loop.py as a ChatClient
+
+simple_agent/sessions.py
+  - Loads existing JSONL session messages
+  - Appends new user, assistant, and tool messages
+
+Mental model:
+
+main.py wires the app together.
+loop.py is the agent control loop.
+tools.py defines what the model can ask the harness to do.
+safety.py and docker_bash.py decide what is allowed to actually happen.
+openrouter.py is only the model API client.
